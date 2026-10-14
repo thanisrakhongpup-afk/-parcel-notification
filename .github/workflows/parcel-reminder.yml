@@ -1,0 +1,94 @@
+
+name: Parcel reminder 30 minutes
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Firebase Admin
+        run: npm install firebase-admin
+
+      - name: Check ETA and send push
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          node <<'NODE'
+          const admin = require("firebase-admin");
+
+          async function main() {
+            const serviceAccount = JSON.parse(
+              process.env.FIREBASE_SERVICE_ACCOUNT
+            );
+
+            admin.initializeApp({
+              credential: admin.credential.cert(serviceAccount)
+            });
+
+            const db = admin.firestore();
+            const now = Date.now();
+            const parcels = await db.collection("parcels").get();
+
+            for (const parcelDoc of parcels.docs) {
+              const p = parcelDoc.data();
+              const eta = p.eta || p.arrival;
+              const phone = String(p.customerPhone || "")
+                .replace(/\D/g, "");
+
+              if (!eta || !phone) continue;
+              if (p.reminder30Sent === true) continue;
+              if (p.deliveryCompleted === true ||
+                  p.status === "จัดส่งสำเร็จ") continue;
+
+              const minutes = (new Date(eta).getTime() - now) / 60000;
+
+              if (minutes < 25 || minutes > 35) continue;
+
+              const tokenDoc = await db
+                .collection("customerPushTokens")
+                .doc(phone)
+                .get();
+
+              if (!tokenDoc.exists || !tokenDoc.data().token) continue;
+
+              await admin.messaging().send({
+                token: tokenDoc.data().token,
+                notification: {
+                  title: "📦 พัสดุใกล้ถึงแล้ว",
+                  body: พัสดุ ${p.tracking || ""} คาดว่าจะถึงในประมาณ 30 นาที
+                },
+                webpush: {
+                  notification: {
+                    icon: "/icon/customer-icon-192.png"
+                  },
+                  fcmOptions: {
+                    link: "https://parcel-tracking-app-e6713.web.app/index.html"
+                  }
+                }
+              });
+
+              await parcelDoc.ref.update({
+                reminder30Sent: true
+              });
+
+              console.log("Sent reminder:", parcelDoc.id);
+            }
+          }
+
+          main().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
