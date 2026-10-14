@@ -48,6 +48,14 @@ jobs:
               const eta = p.eta || p.arrival;
               const phone = String(p.customerPhone || "")
                 .replace(/\D/g, "");
+                console.log("TEST001 data:", {
+                 eta,
+                phone,
+                 reminder30Sent: p.reminder30Sent,
+              deliveryCompleted: p.deliveryCompleted,
+            status: p.status
+             });
+                
 
               if (!eta || !phone) continue;
               if (p.reminder30Sent === true) continue;
