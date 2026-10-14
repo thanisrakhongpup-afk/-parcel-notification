@@ -42,7 +42,9 @@ jobs:
             const parcels = await db.collection("parcels").get();
 
             for (const parcelDoc of parcels.docs) {
-              const p = parcelDoc.data();
+           if (parcelDoc.id !== "test001") continue;
+
+            const p = parcelDoc.data();
               const eta = p.eta || p.arrival;
               const phone = String(p.customerPhone || "")
                 .replace(/\D/g, "");
@@ -69,7 +71,7 @@ jobs:
                 token: tokenDoc.data().token,
                 notification: {
                   title: "📦 พัสดุใกล้ถึงแล้ว",
-                  body: 'พัสดุ ${p.tracking || ""} คาดว่าจะถึงในประมาณ 30 นาที'
+                  body: `พัสดุ ${p.tracking || ""} คาดว่าจะถึงในประมาณ 30 นาที`
                 },
                 webpush: {
                   notification: {
