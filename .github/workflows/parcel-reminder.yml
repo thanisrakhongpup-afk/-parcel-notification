@@ -52,8 +52,10 @@ jobs:
               if (p.deliveryCompleted === true ||
                   p.status === "จัดส่งสำเร็จ") continue;
 
-              const minutes = (new Date(eta).getTime() - now) / 60000;
+              const etaTime = Date.parse(eta);
+            if (!Number.isFinite(etaTime)) continue;
 
+            const minutes = (etaTime - now) / 60000;
               if (minutes < 25 || minutes > 35) continue;
 
               const tokenDoc = await db
