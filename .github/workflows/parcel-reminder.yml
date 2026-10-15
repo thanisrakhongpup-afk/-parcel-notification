@@ -46,16 +46,16 @@ jobs:
 
             const p = parcelDoc.data();
             console.log("test001 fields:", Object.keys(p));
-            console.log("test001 customerPhone:", p.customerPhone);
+            console.log("test001 customerPhone:", p["customerPhone "]);
             const eta = p.eta || p.arrival;
            const phone = String(p["customerPhone "] || p["phone "] || "")
             .replace(/\D/g, "");
                 console.log("TEST001 data:", {
                  eta,
                 phone,
-                 reminder30Sent: p.reminder30Sent,
-              deliveryCompleted: p.deliveryCompleted,
-            status: p.status
+                reminder30Sent: p["reminder30Sent "],
+                deliveryCompleted: p["deliveryCompleted "],
+                 status: p["status string"]
              });
                 
 
