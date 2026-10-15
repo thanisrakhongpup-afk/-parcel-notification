@@ -21,6 +21,7 @@ jobs:
       - name: Install Firebase Admin
         run: npm install firebase-admin
 
+      
       - name: Check ETA and send push
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -42,31 +43,22 @@ jobs:
             const parcels = await db.collection("parcels").get();
 
             for (const parcelDoc of parcels.docs) {
-           if (parcelDoc.id !== "test001") continue;
+              const p = parcelDoc.data();
 
-            const p = parcelDoc.data();
-            console.log("test001 fields:", Object.keys(p));
-            console.log("test001 customerPhone:", p["customerPhone "]);
-            const eta = p.eta || p.arrival;
-           const phone = String(p["customerPhone "] || p["phone "] || "")
-            .replace(/\D/g, "");
-                console.log("TEST001 data:", {
-                 eta,
-                phone,
-                reminder30Sent: p["reminder30Sent "],
-                deliveryCompleted: p["deliveryCompleted "],
-                 status: p["status string"]
-             });
-                
+              const eta = p.eta || p.arrival;
+              const phone = String(
+                p.customerPhone || p.phone || ""
+              ).replace(/\D/g, "");
 
-              if (!eta || !phone) continue;
-             if (p["reminder30Sent "] === true) continue;
-          if (p["deliveryCompleted "] === true ||
-          p["status string"] === "จัดส่งสำเร็จ") continue;
+              if (!eta || phone.length !== 10) continue;
+              if (p.reminder30Sent === true) continue;
+              if (p.deliveryCompleted === true) continue;
+              if (p.status === "จัดส่งสำเร็จ") continue;
+
               const etaTime = Date.parse(eta);
-            if (!Number.isFinite(etaTime)) continue;
+              if (!Number.isFinite(etaTime)) continue;
 
-            const minutes = (etaTime - now) / 60000;
+              const minutes = (etaTime - now) / 60000;
               if (minutes < 25 || minutes > 35) continue;
 
               const tokenDoc = await db
@@ -74,13 +66,16 @@ jobs:
                 .doc(phone)
                 .get();
 
-              if (!tokenDoc.exists || !tokenDoc.data().token) continue;
+              if (!tokenDoc.exists || !tokenDoc.data().token) {
+                console.log("No push token for:", parcelDoc.id);
+                continue;
+              }
 
               await admin.messaging().send({
                 token: tokenDoc.data().token,
                 notification: {
                   title: "📦 พัสดุใกล้ถึงแล้ว",
-                  body: `พัสดุ ${p.tracking || ""} คาดว่าจะถึงในประมาณ 30 นาที`
+                  body: พัสดุ ${p.tracking || ""} คาดว่าจะถึงในประมาณ 30 นาที
                 },
                 webpush: {
                   notification: {
@@ -93,8 +88,8 @@ jobs:
               });
 
               await parcelDoc.ref.update({
-               "reminder30Sent ": true
-                 });
+                reminder30Sent: true
+              });
 
               console.log("Sent reminder:", parcelDoc.id);
             }
