@@ -44,7 +44,6 @@ jobs:
 
             for (const parcelDoc of parcels.docs) {
               const p = parcelDoc.data();
-
               const eta = p.eta || p.arrival;
               const phone = String(
                 p.customerPhone || p.phone || ""
@@ -75,7 +74,7 @@ jobs:
                 token: tokenDoc.data().token,
                 notification: {
                   title: "📦 พัสดุใกล้ถึงแล้ว",
-                  body: `พัสดุ ${p.tracking || ""} คาดว่าจะถึงในประมาณ 30 นาที`
+                  body: พัสดุ ${p.tracking || ""} คาดว่าจะถึงในประมาณ 30 นาที
                 },
                 webpush: {
                   notification: {
@@ -100,3 +99,4 @@ jobs:
             process.exit(1);
           });
           NODE
+      
