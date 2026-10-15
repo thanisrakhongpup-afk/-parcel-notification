@@ -45,9 +45,11 @@ jobs:
            if (parcelDoc.id !== "test001") continue;
 
             const p = parcelDoc.data();
-              const eta = p.eta || p.arrival;
-              const phone = String(p.customerPhone || "")
-                .replace(/\D/g, "");
+            console.log("TEST001 fields:", Object.keys(p));
+            console.log("TEST001 customerPhone:", p.customerPhone);
+            const eta = p.eta || p.arrival;
+            const phone = String(p.customerPhone || p.phone || "")
+              .replace(/\D/g, "");
                 console.log("TEST001 data:", {
                  eta,
                 phone,
