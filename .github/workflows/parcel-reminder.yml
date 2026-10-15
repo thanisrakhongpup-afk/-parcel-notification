@@ -41,6 +41,8 @@ jobs:
             const db = admin.firestore();
             const now = Date.now();
             const parcels = await db.collection("parcels").get();
+            console.log("จำนวนพัสดุที่ตรวจพบ:", parcels.size);
+            console.log("เวลาปัจจุบัน UTC:", new Date(now).toISOString());
 
             for (const parcelDoc of parcels.docs) {
               const p = parcelDoc.data();
