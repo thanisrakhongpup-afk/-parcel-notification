@@ -60,10 +60,10 @@ jobs:
               if (!Number.isFinite(etaTime)) continue;
 
               const minutes = (etaTime - now) / 60000;
-              if (minutes < 25 || minutes > 35) {
-              console.log("ข้ามพัสดุ:", parcelDoc.id, "เหลืออีก", minutes, "นาที");
-              continue;
-                 }
+              if (minutes <= 0 || minutes > 35) {
+          console.log("ข้ามพัสดุ:", parcelDoc.id, "เหลืออีก", minutes, "นาที");
+             continue;
+               }
 
               const tokenDoc = await db
                 .collection("customerPushTokens")
