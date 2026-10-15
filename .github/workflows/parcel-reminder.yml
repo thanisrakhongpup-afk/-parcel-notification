@@ -60,10 +60,9 @@ jobs:
                 
 
               if (!eta || !phone) continue;
-              if (p.reminder30Sent === true) continue;
-              if (p.deliveryCompleted === true ||
-                  p.status === "จัดส่งสำเร็จ") continue;
-
+             if (p["reminder30Sent "] === true) continue;
+          if (p["deliveryCompleted "] === true ||
+          p["status string"] === "จัดส่งสำเร็จ") continue;
               const etaTime = Date.parse(eta);
             if (!Number.isFinite(etaTime)) continue;
 
@@ -94,8 +93,8 @@ jobs:
               });
 
               await parcelDoc.ref.update({
-                reminder30Sent: true
-              });
+               "reminder30Sent ": true
+                 });
 
               console.log("Sent reminder:", parcelDoc.id);
             }
